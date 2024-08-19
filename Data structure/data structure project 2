@@ -1,0 +1,77 @@
+'''
+transfer bst to avl
+'''
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
+
+class BinaryTreeNode:
+    def __init__(self, key):
+        self.key = key
+        self.left = None
+        self.right = None
+
+
+def insert_binary_tree(root, key):
+    if root is None:
+        return BinaryTreeNode(key)
+    if key < root.key:
+        root.left = insert_binary_tree(root.left, key)
+    else:
+        root.right = insert_binary_tree(root.right, key)
+    return root
+
+def create_sorted_sequence_tree(sequence):
+    root = None
+    for item in sequence:
+        root = insert_binary_tree(root, item)
+    return root
+
+def balance_binary_tree(root):
+    sorted_sequence = in_order_traversal(root)
+    return create_balanced_tree(sorted_sequence)
+
+def in_order_traversal(root):
+    if root is None:
+        return []
+    return in_order_traversal(root.left) + [root.key] + in_order_traversal(root.right)
+
+def create_balanced_tree(sequence):
+    if not sequence:
+        return None
+    mid = len(sequence) // 2
+    root = BinaryTreeNode(sequence[mid])
+    root.left = create_balanced_tree(sequence[:mid])
+    root.right = create_balanced_tree(sequence[mid+1:])
+    return root
+
+def plot_binary_tree(root, ax, x, y, dx, dy):
+    if root is not None:
+        ax.text(x, y, str(root.key), style='italic', weight='bold', size=12, ha='center', va='center', bbox=dict(facecolor='lightblue', edgecolor='black', boxstyle='circle,pad=0.1'))
+        if root.left is not None:
+            ax.plot([x, x - dx], [y - dy, y - 1], 'k-', zorder=0)
+            plot_binary_tree(root.left, ax, x - dx, y - dy, dx / 1.5, dy)
+        if root.right is not None:
+            ax.plot([x, x + dx], [y - dy, y - 1], 'k-', zorder=0)
+            plot_binary_tree(root.right, ax, x + dx, y - dy, dx / 1.5, dy)
+
+def draw_binary_trees(root_binary, root_balanced):
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+    fig.suptitle("Binary Search Tree and Balanced Binary Search Tree", fontsize=16)
+
+    axs[0].set_title("Binary Search Tree")
+    plot_binary_tree(root_binary, axs[0], 0.5, 1, 0.4, 0.15)
+    axs[0].axis('off')
+
+    axs[1].set_title("Balanced Binary Search Tree")
+    plot_binary_tree(root_balanced, axs[1], 0.5, 1, 0.4, 0.15)
+    axs[1].axis('off')
+
+    plt.show()
+
+sequence = [8, 3, 10, 1, 6, 9, 12]
+root_binary_tree = create_sorted_sequence_tree(sequence)
+
+root_balanced_tree = balance_binary_tree(root_binary_tree)
+
+draw_binary_trees(root_binary_tree, root_balanced_tree)

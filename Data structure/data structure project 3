@@ -1,0 +1,90 @@
+
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+
+class GeneralTree:
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+    def add_child(self, child_data):
+        child = GeneralTree(child_data)
+        self.children.append(child)
+
+
+
+def general_tree_to_binary_tree(general_tree_node):
+    binary_tree_node = {
+        'data': general_tree_node.data,
+        'left': None,
+        'right': None
+    }
+
+    if len(general_tree_node.children) > 0:
+        binary_tree_node['left'] = general_tree_to_binary_tree(general_tree_node.children[0])
+
+        current_node = binary_tree_node['left']
+        for child in general_tree_node.children[1:]:
+            current_node['right'] = general_tree_to_binary_tree(child)
+            current_node = current_node['right']
+
+    return binary_tree_node
+
+
+
+def plot_trees(general_tree, binary_tree):
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+
+    general_tree_graph = nx.DiGraph()
+    add_general_tree_to_graph(general_tree_graph, general_tree, None, level=1)
+    pos_general_tree = nx.shell_layout(general_tree_graph)
+    labels_general_tree = {node: str(node) for node in general_tree_graph.nodes()}
+    nx.draw(general_tree_graph, pos_general_tree, with_labels=True, labels=labels_general_tree, node_size=1000,
+            node_color='skyblue', font_size=10, ax=axes[0])
+    axes[0].set_title('General Tree')
+
+    binary_tree_graph = nx.DiGraph()
+    add_binary_tree_to_graph(binary_tree_graph, binary_tree, None)
+    pos_binary_tree = nx.shell_layout(binary_tree_graph)
+    labels_binary_tree = {node: str(node) for node in binary_tree_graph.nodes()}
+    nx.draw(binary_tree_graph, pos_binary_tree, with_labels=True, labels=labels_binary_tree, node_size=1000,
+            node_color='lightcoral', font_size=10, ax=axes[1])
+    axes[1].set_title('Binary Tree')
+
+    plt.show()
+
+
+def add_general_tree_to_graph(graph, node, parent, level=1):
+    graph.add_node(node.data)
+    if parent:
+        graph.add_edge(parent.data, node.data)
+    for child in node.children:
+        add_general_tree_to_graph(graph, child, node, level + 1)
+
+
+def add_binary_tree_to_graph(graph, node, parent):
+    graph.add_node(node['data'])
+    if parent:
+        graph.add_edge(parent['data'], node['data'])
+    if node['left']:
+        add_binary_tree_to_graph(graph, node['left'], node)
+    if node['right']:
+        add_binary_tree_to_graph(graph, node['right'], node)
+
+root_general_complex = GeneralTree('A')
+root_general_complex.add_child('B')
+root_general_complex.add_child('C')
+root_general_complex.add_child('D')
+root_general_complex.children[0].add_child('E')
+root_general_complex.children[0].add_child('F')
+root_general_complex.children[0].children[0].add_child('G')
+root_general_complex.children[1].add_child('H')
+root_general_complex.children[1].children[0].add_child('I')
+root_general_complex.children[1].children[0].add_child('J')
+root_general_complex.children[1].children[0].add_child('K')
+
+root_binary_complex = general_tree_to_binary_tree(root_general_complex)
+
+plot_trees(root_general_complex, root_binary_complex)
